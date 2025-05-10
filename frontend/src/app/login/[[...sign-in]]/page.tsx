@@ -21,7 +21,7 @@ export default function Login() {
             <BackgroundBeams />
             <BackgroundGradient className="p-2">
                 <SignedOut>
-                    <SignIn fallbackRedirectUrl={'/chat'} />
+                    <SignIn />
                 </SignedOut>
                 <SignedIn>
                     {/* User is signed in, will be redirected by the useEffect above */}
@@ -31,4 +31,4 @@ export default function Login() {
             </BackgroundGradient>
         </div>
     )
-}
+} 

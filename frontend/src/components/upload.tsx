@@ -1,23 +1,23 @@
 "use client";
-import React from "react";
+import React, { useRef } from "react";
 import { FileUpload } from "@/components/ui/file-upload";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { 
   setFiles, 
-  uploadPdfs, 
-  endSession 
+  uploadPdfs
 } from "@/lib/redux/slices/sessionSlice";
 
 export function Upload() {
   const dispatch = useAppDispatch();
   const { 
     files, 
-    sessionId, 
     isSessionActive, 
     isLoading, 
     error 
   } = useAppSelector(state => state.session);
+  
+  const fileUploadKey = useRef(Date.now()).current;
 
   const handleFileUpload = (newFiles: File[]) => {
     dispatch(setFiles(newFiles));
@@ -28,15 +28,13 @@ export function Upload() {
     dispatch(uploadPdfs(files));
   };
 
-  const handleEndSession = async () => {
-    if (!sessionId) return;
-    dispatch(endSession(sessionId));
-  };
-
   return (
     <div className="flex flex-col w-full h-full">
       <div className="w-full h-full max-w-4xl mx-auto flex-1 min-h-96 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-lg">
-        <FileUpload onChange={handleFileUpload} />
+        <FileUpload 
+          onChange={handleFileUpload}
+          key={isSessionActive ? `session-active` : `no-session-${fileUploadKey}`}
+        />
       </div>
       
       {error && (
@@ -47,14 +45,11 @@ export function Upload() {
       
       <div className="mt-4 flex justify-end">
         <button
-          onClick={isSessionActive ? handleEndSession : handleProcessFiles}
-          disabled={isLoading || (!isSessionActive && files.length === 0)}
+          onClick={handleProcessFiles}
+          disabled={isLoading || files.length === 0}
           className={cn(
-            "px-4 py-2 rounded-md font-medium transition-colors",
-            isSessionActive
-              ? "bg-red-500 hover:bg-red-600 text-white" 
-              : "bg-blue-500 hover:bg-blue-600 text-white",
-            (isLoading || (!isSessionActive && files.length === 0)) && 
+            "inline-flex h-12 animate-shimmer items-center justify-center rounded-md border border-slate-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-6 font-medium text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50",
+            (isLoading || files.length === 0) && 
               "opacity-50 cursor-not-allowed"
           )}
         >
@@ -64,10 +59,10 @@ export function Upload() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {isSessionActive ? "Ending..." : "Processing..."}
+              Processing...
             </span>
           ) : (
-            isSessionActive ? "End Session" : "Process Files"
+            "Process Files"
           )}
         </button>
       </div>
