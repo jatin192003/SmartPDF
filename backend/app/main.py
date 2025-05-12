@@ -2,8 +2,10 @@ import os
 import uuid
 import cloudinary
 import cloudinary.uploader
+import asyncio
+import aiohttp
 from typing import List
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from qdrant_client import QdrantClient
@@ -37,6 +39,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+async def periodic_health_check():
+    while True:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("http://localhost:8000/health") as response:
+                    if response.status == 200:
+                        print("Health check successful")
+                    else:
+                        print(f"Health check failed with status: {response.status}")
+        except Exception as e:
+            print(f"Health check error: {str(e)}")
+        
+        # Wait for 14 minutes (840 seconds)
+        await asyncio.sleep(840)
+
+@app.on_event("startup")
+async def startup_event():
+    # Start the periodic health check
+    asyncio.create_task(periodic_health_check())
 
 @app.post("/upload_pdfs/")
 async def upload_pdfs(files: List[UploadFile] = File(...)):
@@ -135,17 +157,11 @@ async def end_session(session_id: str = Form(...)):
     try:
         # Delete file from Cloudinary
         try:
-            # First, check if the file exists
-            result = cloudinary.api.resource(
-                f"tempPDF/{session_id}",
-                resource_type="raw"
-            )
-            print(f"Found file in Cloudinary: {result}")
-
             # Try to delete the file
             delete_result = cloudinary.uploader.destroy(
-                f"tempPDF/{session_id}",
+                public_id=f"tempPDF/{session_id}.pdf",
                 resource_type="raw",
+                type="upload",
                 invalidate=True
             )
             print(f"Cloudinary delete result: {delete_result}")
@@ -170,3 +186,7 @@ async def end_session(session_id: str = Form(...)):
     except Exception as e:
         print(f"General error in end_session: {str(e)}")
         return {"message": f"Error ending session: {e}"}
+    
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
