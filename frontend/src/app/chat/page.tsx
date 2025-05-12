@@ -11,6 +11,7 @@ import UserAvatar from "@/components/userAvatar";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { endSession } from "@/lib/redux/slices/sessionSlice";
 import { cn } from "@/lib/utils";
+import { API_URL } from '@/config';
 
 export default function Chat() {
   const [open, setOpen] = useState(false);
@@ -53,7 +54,7 @@ export default function Chat() {
           // Use Navigator.sendBeacon which is designed for sending data
           // during page unload events
           navigator.sendBeacon(
-            'http://127.0.0.1:8000/end_session/', 
+            `${API_URL}/end_session/`, 
             formData
           );
         } catch (error) {

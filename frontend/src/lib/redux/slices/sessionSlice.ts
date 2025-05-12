@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { API_URL } from '@/config';
 
 interface SessionState {
   sessionId: string | null;
@@ -26,7 +27,7 @@ export const uploadPdfs = createAsyncThunk(
         formData.append(`files`, file);
       });
       
-      const response = await fetch('http://127.0.0.1:8000/upload_pdfs/', {
+      const response = await fetch(`${API_URL}/upload_pdfs/`, {
         method: 'POST',
         body: formData,
       });
@@ -48,12 +49,11 @@ export const chat = createAsyncThunk(
   'session/chat',
   async ({ sessionId, query }: { sessionId: string, query: string }, { rejectWithValue }) => {
     try {
-      // Create a URLSearchParams object for x-www-form-urlencoded format
       const formData = new URLSearchParams();
       formData.append('session_id', sessionId);
       formData.append('query', query);
       
-      const response = await fetch('http://127.0.0.1:8000/chat/', {
+      const response = await fetch(`${API_URL}/chat/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -78,11 +78,10 @@ export const endSession = createAsyncThunk(
   'session/endSession',
   async (sessionId: string, { rejectWithValue }) => {
     try {
-      // Create a URLSearchParams object for x-www-form-urlencoded format
       const formData = new URLSearchParams();
       formData.append('session_id', sessionId);
       
-      const response = await fetch('http://127.0.0.1:8000/end_session/', {
+      const response = await fetch(`${API_URL}/end_session/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',

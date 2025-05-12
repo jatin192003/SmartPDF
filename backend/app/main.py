@@ -44,7 +44,7 @@ async def periodic_health_check():
     while True:
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get("http://localhost:8000/health") as response:
+                async with session.get("https://smartpdf-22t8.onrender.com/health") as response:
                     if response.status == 200:
                         print("Health check successful")
                     else:

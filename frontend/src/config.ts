@@ -1,0 +1,1 @@
+export const API_URL = 'https://smartpdf-22t8.onrender.com'; 
