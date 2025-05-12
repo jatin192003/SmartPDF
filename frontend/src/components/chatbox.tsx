@@ -80,13 +80,13 @@ export default function Chatbox() {
   return (
     <div className="flex flex-col h-full">
       {/* Messages area - this is the only scrollable part */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-2 md:p-4 space-y-4">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
+          <div className="flex flex-col items-center justify-center h-full text-center px-4">
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
-                className="h-8 w-8 text-blue-500 dark:text-blue-300" 
+                className="h-6 w-6 md:h-8 md:w-8 text-blue-500 dark:text-blue-300" 
                 fill="none" 
                 viewBox="0 0 24 24" 
                 stroke="currentColor"
@@ -99,10 +99,10 @@ export default function Chatbox() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-neutral-700 dark:text-neutral-200">
+            <h3 className="text-base md:text-lg font-medium text-neutral-700 dark:text-neutral-200">
               No messages yet
             </h3>
-            <p className="text-neutral-500 dark:text-neutral-400 max-w-xs mt-2">
+            <p className="text-sm md:text-base text-neutral-500 dark:text-neutral-400 max-w-xs mt-2">
               Ask questions about your document and get accurate answers based on the content
             </p>
           </div>
@@ -111,16 +111,16 @@ export default function Chatbox() {
             <div 
               key={message.id} 
               className={cn(
-                "flex items-start gap-3",
+                "flex items-start gap-2 md:gap-3",
                 message.sender === 'user' ? "justify-end" : "justify-start"
               )}
             >
               {/* For bot messages: Show avatar on the left side */}
               {message.sender === 'bot' && (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center flex-shrink-0 mt-1">
+                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center flex-shrink-0 mt-1">
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
-                    className="h-5 w-5 text-white" 
+                    className="h-4 w-4 md:h-5 md:w-5 text-white" 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor"
@@ -141,7 +141,7 @@ export default function Chatbox() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
                 className={cn(
-                  "max-w-[70%] p-4 rounded-2xl shadow-sm backdrop-blur-sm",
+                  "max-w-[85%] sm:max-w-[80%] md:max-w-[70%] p-3 md:p-4 rounded-2xl shadow-sm backdrop-blur-sm",
                   message.sender === 'user' 
                     ? "bg-blue-500 text-white rounded-tr-none" 
                     : "bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-tl-none"
@@ -161,11 +161,11 @@ export default function Chatbox() {
                 
                 {/* Message text content */}
                 {message.sender === 'user' ? (
-                  <p className="text-sm text-white">
+                  <p className="text-xs sm:text-sm text-white">
                     {message.text}
                   </p>
                 ) : (
-                  <div className="markdown-content text-neutral-800 dark:text-neutral-200">
+                  <div className="markdown-content text-xs sm:text-sm text-neutral-800 dark:text-neutral-200">
                     <ReactMarkdown
                       components={{
                         code({node, className, children, ...props}: {inline?: boolean} & any) {
@@ -178,6 +178,7 @@ export default function Chatbox() {
                               customStyle={{
                                 borderRadius: '0.5rem',
                                 margin: '1rem 0',
+                                fontSize: '0.8rem',
                               }}
                               {...props}
                             >
@@ -198,37 +199,14 @@ export default function Chatbox() {
                 
                 {/* Timestamp */}
                 <div className="flex items-center mt-2 space-x-2">
-                  <div className={cn(
-                    "h-2 w-2 rounded-full",
-                    message.sender === 'user' ? "bg-blue-300" : "bg-neutral-300 dark:bg-neutral-600"
-                  )}/>
-                  <p className={cn(
-                    "text-xs",
-                    message.sender === 'user' ? "text-blue-200" : "text-neutral-400 dark:text-neutral-500"
-                  )}>
-                    {message.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  <p className="text-[10px] sm:text-xs text-neutral-400 dark:text-neutral-500">
+                    {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
               </motion.div>
               
               {/* For user messages: Show avatar on the right side */}
-              {message.sender === 'user' && (
-                <div className="flex-shrink-0 mt-1">
-                  {user?.imageUrl ? (
-                    <img 
-                      src={user.imageUrl} 
-                      alt="User" 
-                      className="w-8 h-8 rounded-full object-cover border border-neutral-200 dark:border-neutral-700"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                      <span className="text-xs font-medium text-white">
-                        {user?.firstName?.charAt(0) || 'U'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
+              {message.sender === 'user' && <UserAvatar />}
             </div>
           ))
         )}

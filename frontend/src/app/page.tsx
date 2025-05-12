@@ -18,13 +18,13 @@ export default function Home() {
         }}
         className="relative flex flex-col gap-4 items-center justify-center px-4"
       >
-        <div className="text-3xl md:text-7xl font-bold dark:text-white text-center">
+        <div className="text-2xl sm:text-3xl md:text-7xl font-bold dark:text-white text-center">
           SmartPDF
         </div>
-        <div className="font-extralight text-center text-base md:text-4xl dark:text-neutral-200 py-4">
+        <div className="font-extralight text-center text-sm sm:text-base md:text-4xl dark:text-neutral-200 py-2 md:py-4 max-w-md md:max-w-2xl">
         Turn PDFs into conversations - your documents, now answering your questions.
         </div>
-        <button className="bg-black cursor-pointer dark:bg-white rounded-full w-fit text-white dark:text-black px-4 py-2" onClick={() => router.push('/login')}>
+        <button className="bg-black cursor-pointer dark:bg-white rounded-full w-fit text-white dark:text-black px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base" onClick={() => router.push('/login')}>
           Get Started
         </button>
       </motion.div>

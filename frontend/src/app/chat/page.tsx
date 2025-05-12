@@ -117,25 +117,25 @@ const Dashboard = () => {
   };
   
   return (
-    <div className="flex flex-1 h-full w-full p-3 md:p-6">
+    <div className="flex flex-1 h-full w-full p-2 sm:p-3 md:p-6">
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="w-full h-full bg-white dark:bg-neutral-800 rounded-2xl shadow-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 flex flex-col"
+        className="w-full h-full bg-white dark:bg-neutral-800 rounded-xl md:rounded-2xl shadow-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 flex flex-col"
       >
         {!isSessionActive ? (
           // Upload view - shown when no session is active
           <div className="flex h-full w-full flex-col">
-            <div className="p-4 border-b border-neutral-100 dark:border-neutral-700 bg-white dark:bg-neutral-800">
-              <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+            <div className="p-3 md:p-4 border-b border-neutral-100 dark:border-neutral-700 bg-white dark:bg-neutral-800">
+              <h2 className="text-lg md:text-xl font-semibold text-neutral-800 dark:text-neutral-200">
                 Upload Your PDF
               </h2>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+              <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                 Upload a PDF file to start your conversation
               </p>
             </div>
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex-1 p-3 md:p-6 overflow-y-auto">
               <Upload />
             </div>
           </div>
@@ -143,12 +143,12 @@ const Dashboard = () => {
           // Chat view - shown when session is active
           <>
             {/* Fixed header that stays in place */}
-            <div className="p-4 border-b border-neutral-100 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex justify-between items-center sticky top-0 z-10">
+            <div className="p-3 md:p-4 border-b border-neutral-100 dark:border-neutral-700 bg-white dark:bg-neutral-800 flex justify-between items-center sticky top-0 z-10">
               <div>
-                <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+                <h2 className="text-lg md:text-xl font-semibold text-neutral-800 dark:text-neutral-200">
                   Chat with your PDF
                 </h2>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                   Session ID: {sessionId?.substring(0, 8)}...
                 </p>
               </div>
@@ -157,14 +157,14 @@ const Dashboard = () => {
                 onClick={handleEndSession}
                 disabled={isLoading}
                 className={cn(
-                  "relative inline-flex h-10 overflow-hidden rounded-md p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50",
+                  "relative inline-flex h-8 md:h-10 overflow-hidden rounded-md p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50",
                 )}
               >
                 <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-                <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-md bg-slate-950 px-4 py-1 text-sm font-medium text-white backdrop-blur-3xl">
+                <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-md bg-slate-950 px-2 md:px-4 py-1 text-xs md:text-sm font-medium text-white backdrop-blur-3xl">
                   {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <span className="flex items-center gap-1 md:gap-2">
+                      <svg className="animate-spin h-3 w-3 md:h-4 md:w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
