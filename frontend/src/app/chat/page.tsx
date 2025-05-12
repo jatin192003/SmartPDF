@@ -95,7 +95,7 @@ export default function Chat() {
   );
 }
 
-export const Logo = () => {
+const Logo = () => {
   const user = useUser()
   if (!user) return null
   return (
