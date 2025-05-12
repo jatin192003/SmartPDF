@@ -1,6 +1,7 @@
 import os
-import shutil
 import uuid
+import cloudinary
+import cloudinary.uploader
 from typing import List
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
@@ -10,8 +11,21 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from app.utils import process_pdf
 from app.chat import get_answer_with_sources
-from app.config import QDRANT_URL, QDRANT_API_KEY, GOOGLE_API_KEY
+from app.config import (
+    QDRANT_URL, 
+    QDRANT_API_KEY, 
+    GOOGLE_API_KEY,
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET
+)
 
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=CLOUDINARY_CLOUD_NAME,
+    api_key=CLOUDINARY_API_KEY,
+    api_secret=CLOUDINARY_API_SECRET
+)
 
 app = FastAPI()
 sessions = {}
@@ -39,23 +53,39 @@ async def upload_pdfs(files: List[UploadFile] = File(...)):
             )
     
     session_id = str(uuid.uuid4())
-    os.makedirs(f"temp/{session_id}", exist_ok=True)
     file_paths = []
 
     try:
         for file in files:
-            file_path = f"temp/{session_id}/{file.filename}"
-            with open(file_path, "wb") as f:
-                f.write(await file.read())
-            file_paths.append(file_path)
+            # Read file content
+            content = await file.read()
+            
+            # Upload to Cloudinary in tempPDF folder with session_id as filename
+            upload_result = cloudinary.uploader.upload(
+                content,
+                resource_type="raw",
+                public_id=f"tempPDF/{session_id}",
+                format="pdf"
+            )
+            
+            # Get the secure URL of the uploaded file
+            file_url = upload_result['secure_url']
+            file_paths.append(file_url)
 
         vectorstore = process_pdf(file_paths, session_id)
         sessions[session_id] = vectorstore 
 
         return {"session_id": session_id}
     except Exception as e:
-        # Clean up temp directory in case of error
-        shutil.rmtree(f"temp/{session_id}", ignore_errors=True)
+        # Clean up Cloudinary resources in case of error
+        for path in file_paths:
+            try:
+                cloudinary.uploader.destroy(
+                    f"tempPDF/{session_id}",
+                    resource_type="raw"
+                )
+            except:
+                pass
         return JSONResponse(
             status_code=500,
             content={"message": f"Error processing files: {str(e)}"}
@@ -103,12 +133,40 @@ async def chat(session_id: str = Form(...), query: str = Form(...)):
 async def end_session(session_id: str = Form(...)):
     client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
     try:
-        shutil.rmtree(f"temp/{session_id}", ignore_errors=True)
+        # Delete file from Cloudinary
+        try:
+            # First, check if the file exists
+            result = cloudinary.api.resource(
+                f"tempPDF/{session_id}",
+                resource_type="raw"
+            )
+            print(f"Found file in Cloudinary: {result}")
+
+            # Try to delete the file
+            delete_result = cloudinary.uploader.destroy(
+                f"tempPDF/{session_id}",
+                resource_type="raw",
+                invalidate=True
+            )
+            print(f"Cloudinary delete result: {delete_result}")
+
+            if delete_result.get('result') != 'ok':
+                print(f"Failed to delete file: {delete_result}")
+                return {"message": "Failed to delete file from Cloudinary"}
+
+        except cloudinary.api.NotFound:
+            print(f"File not found in Cloudinary: tempPDF/{session_id}")
+        except Exception as cloudinary_error:
+            print(f"Cloudinary cleanup error: {str(cloudinary_error)}")
+            print(f"Error type: {type(cloudinary_error)}")
+            return {"message": f"Error deleting from Cloudinary: {str(cloudinary_error)}"}
+
+        # Delete collection from Qdrant
         if client.collection_exists(collection_name=session_id):
             client.delete_collection(collection_name=session_id)
             return {"message": "Session ended and data cleared."}
         else:
             return {"message": "Session not found."}
     except Exception as e:
+        print(f"General error in end_session: {str(e)}")
         return {"message": f"Error ending session: {e}"}
-

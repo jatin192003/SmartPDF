@@ -1,32 +1,48 @@
 from typing import List
+import requests
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
+import tempfile
 import os
 
 from app.config import QDRANT_URL, GOOGLE_API_KEY, QDRANT_API_KEY
 
-def process_pdf(file_path: List[str], session_id: str) -> QdrantVectorStore:
-    if not file_path:
+def download_from_cloudinary(url: str) -> str:
+    """Download a file from Cloudinary and save it to a temporary file."""
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise ValueError(f"Failed to download file from {url}")
+    
+    # Create a temporary file
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+    temp_file.write(response.content)
+    temp_file.close()
+    
+    return temp_file.name
+
+def process_pdf(file_paths: List[str], session_id: str) -> QdrantVectorStore:
+    if not file_paths:
         raise ValueError("No files provided to process")
         
     documents = []
+    temp_files = []
+    
     try:
-        for path in file_path:
-            if not os.path.exists(path):
-                raise FileNotFoundError(f"File not found: {path}")
-                
-            if not path.lower().endswith('.pdf'):
-                raise ValueError(f"File {path} is not a PDF")
-                
+        for url in file_paths:
             try:
-                loader = PyPDFLoader(path)
+                # Download file from Cloudinary
+                temp_path = download_from_cloudinary(url)
+                temp_files.append(temp_path)
+                
+                # Load and process the PDF
+                loader = PyPDFLoader(temp_path)
                 docs = loader.load()
                 documents.extend(docs)
             except Exception as e:
-                raise ValueError(f"Error loading PDF {path}: {str(e)}")
+                raise ValueError(f"Error loading PDF from {url}: {str(e)}")
         
         if not documents:
             raise ValueError("No content extracted from PDF files")
@@ -45,7 +61,7 @@ def process_pdf(file_path: List[str], session_id: str) -> QdrantVectorStore:
         except Exception as e:
             raise RuntimeError(f"Failed to initialize embeddings: {str(e)}")
 
-        # Create the vector store directly
+        # Create the vector store
         try:
             vector_store = QdrantVectorStore.from_documents(
                 documents=chunks,
@@ -66,5 +82,10 @@ def process_pdf(file_path: List[str], session_id: str) -> QdrantVectorStore:
         except:
             pass  # Ignore cleanup errors
         raise  # Re-raise the original exception
-    
-    
+    finally:
+        # Clean up temporary files
+        for temp_file in temp_files:
+            try:
+                os.unlink(temp_file)
+            except:
+                pass
