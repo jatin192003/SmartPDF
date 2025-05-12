@@ -168,9 +168,9 @@ export default function Chatbox() {
                   <div className="markdown-content text-neutral-800 dark:text-neutral-200">
                     <ReactMarkdown
                       components={{
-                        code({node, inline, className, children, ...props}) {
+                        code({node, className, children, ...props}: {inline?: boolean} & any) {
                           const match = /language-(\w+)/.exec(className || '');
-                          return !inline && match ? (
+                          return !props.inline && match ? (
                             <SyntaxHighlighter
                               style={vscDarkPlus}
                               language={match[1]}
