@@ -313,7 +313,7 @@
 /* Ensure proper viewport height on mobile */
 @supports (-webkit-touch-callout: none) {
   .h-screen {
-    height: -webkit-fill-available;
+    height: 100dvh;
   }
 }
 
