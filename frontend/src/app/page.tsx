@@ -1,10 +1,18 @@
 "use client"
 
 import { AuroraBackground } from "@/components/ui/aurora-background";
+import { useAuth } from "@clerk/nextjs";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 export default function Home() {
   const router = useRouter()
+  const { isLoaded, userId } = useAuth();
+  useEffect(() => {
+    if (isLoaded && userId) {
+      router.push('/chat')
+    }
+  }, [isLoaded, userId, router])
   return (
     <div className="h-screen w-screen">
       <AuroraBackground>

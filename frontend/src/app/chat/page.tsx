@@ -25,7 +25,7 @@ export default function Chat() {
         // Standard way to show a confirmation dialog before closing
         e.preventDefault();
         e.returnValue = "Your session will be ended. Are you sure you want to leave?";
-        
+
         // Note: Modern browsers don't allow custom messages in the confirmation dialog
         // for security reasons, but this will still trigger a standard confirmation
         return e.returnValue;
@@ -50,11 +50,11 @@ export default function Chat() {
           // Create form data for the request
           const formData = new FormData();
           formData.append('session_id', sessionId);
-          
+
           // Use Navigator.sendBeacon which is designed for sending data
           // during page unload events
           navigator.sendBeacon(
-            `${API_URL}/end_session/`, 
+            `${API_URL}/end_session/`,
             formData
           );
         } catch (error) {
@@ -64,11 +64,19 @@ export default function Chat() {
     };
 
     window.addEventListener('unload', handleUnload);
-    
+
     return () => {
       window.removeEventListener('unload', handleUnload);
     };
   }, [isSessionActive, sessionId]);
+  const onSignOutSessionCheck = () => {
+    console.log("session check initiated")
+    if (isSessionActive && sessionId) {
+      console.log("session found with session id: ", sessionId);
+      console.log("ending session");
+      dispatch(endSession(sessionId));
+    }
+  }
 
   return (
     <div className="h-screen w-full bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-950">
@@ -78,12 +86,14 @@ export default function Chat() {
             <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
               {open ? <Logo /> : <UserAvatar />}
               <div className="mt-8 flex flex-col gap-2">
-                <SignOutButton>
-                  <SidebarLink link={{
-                    label: 'Logout',
-                    href: '#',
-                    icon: <LogOutIcon className="h-5 w-5 shrink-0" />
-                  }} />
+                <SignOutButton >
+                  <div onClick={onSignOutSessionCheck}>
+                    <SidebarLink link={{
+                      label: 'Logout',
+                      href: '#',
+                      icon: <LogOutIcon className="h-5 w-5 shrink-0" />
+                    }} />
+                  </div>
                 </SignOutButton>
               </div>
             </div>
@@ -110,15 +120,15 @@ const Logo = () => {
 const Dashboard = () => {
   const { isSessionActive, sessionId, isLoading } = useAppSelector(state => state.session);
   const dispatch = useAppDispatch();
-  
+
   const handleEndSession = () => {
     if (!sessionId) return;
     dispatch(endSession(sessionId));
   };
-  
+
   return (
     <div className="flex flex-1 h-full w-full p-2 sm:p-3 md:p-6">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -152,7 +162,7 @@ const Dashboard = () => {
                   Session ID: {sessionId?.substring(0, 8)}...
                 </p>
               </div>
-              
+
               <button
                 onClick={handleEndSession}
                 disabled={isLoading}
@@ -176,7 +186,7 @@ const Dashboard = () => {
                 </span>
               </button>
             </div>
-            
+
             {/* Scrollable content area that fills remaining space */}
             <div className="flex-1 overflow-hidden">
               <Chatbox />
